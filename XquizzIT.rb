@@ -34,31 +34,30 @@ require 'fileutils'
     #this updates the quiz score to the user profile which is text file
   end
 end
+###############
+def load_quiz (topic)
+  topic = topic # read all questions and answers in to arrays
+  questions=[]
+  answers=[]
+  File.read("quiz/#{topic}/#{topic}_Qs.txt").each_line {|line| questions.push line.chomp}
+  File.read("quiz/#{topic}/#{topic}_As.txt").each_line {|line| answers.push line.chomp}
+  # response = {
+  #   :q => questions,
+  #   :a => answers
+  # }
+  return questions, answers, questions.count, topic
+end
 #####
 class Quiz
   require "colorize"
 
-  def initialize(topic, num_questions)
+  def initialize(topic, num_questions, q=[], a=[])
     @topic = topic
     @num = num_questions.to_i
-    @q = []
-    @a = []
+    @q = q
+    @a = a
   end
   attr_accessor :topic, :num, :q, :a
-
-  def load_quiz # read all questions and answers in to arrays
-    questions=[]
-    answers=[]
-    File.read("#{topic}_Qs.txt").each_line {|line| questions.push line.chomp}
-    File.read("#{topic}_As.txt").each_line {|line| answers.push line.chomp}
-    # response = {
-    #   :q => questions,
-    #   :a => answers
-    # }
-    return questions, answers
-    end
-
-
 
   def build_quiz()
     for i in 0...@num
@@ -69,19 +68,21 @@ class Quiz
       @q << question
       @a << answer
     end
-    File.open("#{topic}_Qs.txt", "w+") do |f|
+    system("mkdir quiz/#{topic}")
+    File.open("quiz/#{topic}/#{topic}_Qs.txt", "w+") do |f|
       @q.each { |element| f.puts(element) }
     end
-    File.open("#{topic}_As.txt", "w+") do |f|
+    File.open("quiz/#{topic}/#{topic}_As.txt", "w+") do |f|
       @a.each { |element| f.puts(element) }
     end
+    puts "Well done, the quiz #{@topic} is ready"
   end
 
-  def do_quiz(num_of_qs, q, a)
+  def do_quiz(num_of_qs)
     totalPoints=0
     count=0
-    qu = q
-    an = a
+    qu = @q
+    an = @a
     while count < num_of_qs
       #select a random question and answer pair
       listC = @q.count
@@ -159,24 +160,73 @@ end
 
 
 #BUILD THE QUIZ
-puts "What is the topic of your quiz"
-topic= gets.chomp
-puts "How many questions  would you lke to add?"
-n= gets.chomp
+def make_quiz
+  puts "What is the topic of your quiz"
+  topic= gets.chomp.gsub(" ", "_")
+  puts "How many questions  would you lke to add?"
+  n= gets.chomp
+  #this create a new class for a quiz topic
+  topic = Quiz.new(topic, n)
+  #now we input the questions
+  topic.build_quiz()
+end
+#LOAD THE QUIZ
+def load_screen
 
-topic = Quiz.new(topic, n)
+  ls = Dir.glob("**/")
+  ls.shift
+  for i in 0...ls.count
+    ls[i] = ls[i].gsub("/", "").gsub("quiz", "")
+  end
+  quizs = []
+  ls.each{|topic|
+    item = load_quiz(topic)
+    quizs << Quiz.new(item[3], item[2], item[0], item[1])
+  }
+  return quizs
 
-questions = topic.load_quiz[0]
-answers   = topic.load_quiz[1]
+end
 
-# puts questions
-# puts answers
+def menu
+  puts "MENU"
+  puts ""
+  puts "[1] Complete a quiz \n[2] Make Quiz \n[3] Quit"
+  choice = gets.chomp.to_i
+  case choice
+  when 1
+    chosenQuiz = load_screen
+    puts "Choose a quiz from below"
+    puts ""
+    count = 1
+    chosenQuiz.each{|name|
+      puts "[#{count}] #{name.topic}"
+      count +=1}
+    choice = (gets.chomp.to_i )- 1
+    if choice <0 || choice > chosenQuiz.count
+      puts "please make a valid choice"
+      load_screen
+    end
+    puts "how many questions would you like max is #{chosenQuiz[choice].num}"
+    num_of_q = gets.chomp.to_i
+    chosenQuiz[choice].do_quiz(num_of_q)
+  when 2
+    make_quiz
+    menu
+  when 3
+    puts "bye"
+    #ARE USER SCORES SAVED???
+    abort
+  else
+    puts "Not a valid choice please try again"
+    system("clear")
+    menu
+  end
+end
 
+puts load_quiz("animals")
 
-puts topic.do_quiz(3, questions, answers)
-# topic.build_quiz()
-#
-# #LOAD THE QUIZ
+#Quiz.new("animals", n, q, a)
+menu
 # puts "please choose your quiz topic \n #{topic}"
 #
 # #topic.load_quiz
