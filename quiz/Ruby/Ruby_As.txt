@@ -1,0 +1,10 @@
+Puts
+Each
+Hashes
+$
+Require
+Japan
+Chomp
+Float
+Integer
+End

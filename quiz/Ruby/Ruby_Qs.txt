@@ -1,0 +1,10 @@
+What keyword prints the screen and adds a new line?
+What keyword is used to cycle through a array?
+{} curly brackets are used for which data type?
+This symbol is used when making Global Variables
+What keyword is used to import a external library?
+What country was Ruby invented in?
+To remove additional characters from a input what keyword is chained to gets?
+A number with decimal places is called a _____.
+A number without decimal places is called a ______.
+What is the keyword used to end a loop?
